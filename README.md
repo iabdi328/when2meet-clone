@@ -63,9 +63,9 @@ This application serves as a clone of When2Meet, allowing users to collaborative
 
 ## Technologies Used
 
-- **Frontend**: HTML, CSS, JavaScript (or React if used)
-- **Backend**: Node.js / Express (or Python / Flask, etc.)
-- **Database**: PostgreSQL / MongoDB / MySQL
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Python / Flask
+- **Database**: MySQL
 - **Authentication**: Sessions and hashed passwords (bcrypt)
 - **WebSockets**: Socket.io or native WebSocket API for real-time sync
 - **Deployment**: Docker-compatible; stand-alone app
