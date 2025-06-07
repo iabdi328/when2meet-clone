@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}When2Meet Clone{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='main/css/styles.css') }}"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='main/favicon.ico') }}"
+      type="image/x-icon"
+    />
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="logo">🗓️ When2Meet</div>
+      <div class="nav-links">
+        <a href="{{ url_for('main_routes.home') }}">🏠 Home</a>
+        <a href="{{ url_for('main_routes.create_event') }}">📝 Create Event</a>
+        <a href="{{ url_for('main_routes.my_events') }}">📅 My Events</a>
+
+        {% if session.get('last_event_id') %}
+        <a
+          href="{{ url_for('main_routes.availability', event_id=session['last_event_id']) }}"
+          >📊 Last Event Grid</a
+        >
+        {% endif %} {% if 'email' in session %}
+        <span class="user">Welcome, {{ session['email'] }}</span>
+        <a href="{{ url_for('main_routes.logout') }}" class="btn">Logout</a>
+        {% else %}
+        <a href="{{ url_for('main_routes.login') }}" class="btn">Login</a>
+        <a href="{{ url_for('main_routes.register') }}" class="btn outline"
+          >Register</a
+        >
+        {% endif %}
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>{% block content %}{% endblock %}</main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>
+        &copy; 2025 When2Meet Clone. Final Exam Project — Web App Development
+      </p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='main/js/scripts.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

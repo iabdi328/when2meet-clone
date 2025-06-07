@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block title %}Home | When2Meet{% endblock %}
+
+{% block content %}
+<style>
+  .hero {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4rem 5%;
+    background-color: #f5f7ff;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .hero-text {
+    flex: 1 1 500px;
+    padding-right: 2rem;
+  }
+
+  .hero-text h1 {
+    font-size: 2.5rem;
+    color: #341f97;
+    margin-bottom: 1rem;
+  }
+
+  .hero-text p {
+    font-size: 1.1rem;
+    color: #444;
+    line-height: 1.6;
+  }
+
+  .hero-image {
+    flex: 1 1 300px;
+    text-align: center;
+  }
+
+  .hero-image img {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+  }
+
+  @media screen and (max-width: 768px) {
+    .hero {
+      flex-direction: column;
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .hero-text {
+      padding-right: 0;
+      margin-bottom: 2rem;
+    }
+  }
+</style>
+
+<section class="hero">
+  <div class="hero-text">
+    <h1>Find the Best Time to Meet</h1>
+    <p>
+      A smart scheduling app that helps friends, teams, and classmates quickly agree on meeting times—no more endless messages or guessing!
+    </p>
+  </div>
+
+  <div class="hero-image">
+    <img
+      src="https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@14.0.0/color/svg/1F4C5.svg"
+      alt="Calendar Illustration"
+    />
+  </div>
+</section>
+{% endblock %}

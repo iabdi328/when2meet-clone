@@ -1,0 +1,45 @@
+{% extends "layout.html" %} {% block title %}📅 My Events{% endblock %} {% block
+extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='main/css/my_events.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="my-events-container">
+  <h2>📅 My Events</h2>
+
+  <div class="event-section">
+    <h3>Events You Created</h3>
+    {% if created %}
+    <ul class="event-list">
+      {% for event in created %}
+      <li>
+        <a href="{{ url_for('main_routes.availability', event_id=event.id) }}">
+          {{ event.title }} ({{ event.start_date }} → {{ event.end_date }})
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No events created yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="event-section">
+    <h3>Events You Are Invited To</h3>
+    {% if invited %}
+    <ul class="event-list">
+      {% for event in invited %}
+      <li>
+        <a href="{{ url_for('main_routes.availability', event_id=event.id) }}">
+          {{ event.title }} ({{ event.start_date }} → {{ event.end_date }})
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No invites yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

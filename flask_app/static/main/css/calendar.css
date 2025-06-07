@@ -1,0 +1,43 @@
+/* Container grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  background: #f8f8f8;
+  padding: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+/* Individual date cells */
+.calendar-cell {
+  background-color: #ececec;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-weight: 500;
+}
+
+/* Hover effect */
+.calendar-cell:hover {
+  background-color: #dcdcdc;
+}
+
+/* Selected date */
+.calendar-cell.selected {
+  background-color: #6c5ce7;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Responsive: stack columns on small screens */
+@media screen and (max-width: 500px) {
+  .calendar-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

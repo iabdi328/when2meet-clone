@@ -1,0 +1,198 @@
+{% extends "layout.html" %} {% block title %}📅 Availability | {{ event.title
+}}{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='main/css/availability.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="availability-wrapper">
+  <h2>📅 {{ event.title }}</h2>
+  <p class="subtext">
+    From {{ event.start_date }} to {{ event.end_date }} | {{ event.start_time }}
+    – {{ event.end_time }}
+  </p>
+
+  <!-- Best Time to Meet -->
+  <div class="best-time-box">
+    <h3>📌 Best Time to Meet</h3>
+    {% if best_time %}
+    <p>
+      <strong>Date:</strong> {{ best_time.date | datetimeformat('%A, %B %d') }}
+    </p>
+    <p><strong>Time:</strong> {{ best_time.start }} – {{ best_time.end }}</p>
+    <p><strong>Available Users:</strong> {{ best_time.available }}</p>
+    {% else %}
+    <p>No availability submitted yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Mode Selector -->
+  <div class="mode-selector">
+    <label for="mode">Select Mode:</label>
+    <select id="mode">
+      <option value="available" selected>✅ Available</option>
+      <option value="maybe">❔ Maybe</option>
+      <option value="unavailable">❌ Unavailable</option>
+    </select>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div><span class="legend-box available"></span> Your: Available</div>
+    <div><span class="legend-box maybe"></span> Your: Maybe</div>
+    <div><span class="legend-box unavailable"></span> Your: Unavailable</div>
+    <div><span class="legend-box heat-1"></span> 1 Available</div>
+    <div><span class="legend-box heat-2"></span> 2 Available</div>
+    <div><span class="legend-box heat-3"></span> 3+ Available</div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-container">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th>Time</th>
+          {% for day in date_range %}
+          <th>{{ day }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for hour in time_slots %}
+        <tr>
+          <td class="time-col">{{ hour }}</td>
+          {% for day in date_range %}
+          <td data-date="{{ day }}" data-time="{{ hour }}"></td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const availabilityMap = {{ availability_map | tojson }};
+  const heatmapMap = {{ heatmap_map | tojson }};
+  const modeSelector = document.getElementById("mode");
+  const eventId = {{ event.id }};
+  const socket = io();
+
+  let isDragging = false;
+  let selectedMode = modeSelector.value;
+
+  // Join event room
+  socket.emit("join_event", { event_id: eventId });
+
+  // Leave room on unload
+  window.addEventListener("beforeunload", () => {
+    socket.emit("leave_event", { event_id: eventId });
+  });
+
+  // Apply user availability on load
+  window.onload = () => {
+    for (const key in availabilityMap) {
+      const [date, time] = key.split('|');
+      const cell = document.querySelector(`td[data-date="${date}"][data-time="${time}"]`);
+      if (cell) {
+        cell.classList.add(availabilityMap[key]);
+        cell.dataset.status = availabilityMap[key];
+      }
+    }
+
+    applyHeatmap();
+    modeSelector.addEventListener("change", () => selectedMode = modeSelector.value);
+
+    const cells = document.querySelectorAll("td[data-date][data-time]");
+    cells.forEach(cell => {
+      cell.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        isDragging = true;
+        applyMode(cell);
+      });
+      cell.addEventListener("mouseenter", () => {
+        if (isDragging) applyMode(cell);
+      });
+      cell.addEventListener("mouseup", () => isDragging = false);
+      cell.addEventListener("dragstart", e => e.preventDefault());
+    });
+
+    document.addEventListener("mouseup", () => isDragging = false);
+  };
+
+  // Apply mode to clicked cell and notify backend
+  function applyMode(cell) {
+    const states = ["available", "maybe", "unavailable"];
+    states.forEach(s => cell.classList.remove(s));
+    cell.classList.add(selectedMode);
+    cell.dataset.status = selectedMode;
+
+    const payload = {
+      event_id: eventId,
+      date: cell.dataset.date,
+      time: cell.dataset.time,
+      status: selectedMode
+    };
+
+    fetch("/save-availability", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  // Render heatmap colors
+  function applyHeatmap() {
+    const cells = document.querySelectorAll("td[data-date][data-time]");
+    cells.forEach(cell => {
+      const key = `${cell.dataset.date}|${cell.dataset.time}`;
+      const count = heatmapMap[key] || { available: 0, maybe: 0, unavailable: 0 };
+
+      cell.classList.remove("heat-1", "heat-2", "heat-3", "heat-maybe", "heat-unavailable");
+
+      if (count.available >= 3) {
+        cell.classList.add("heat-3");
+      } else if (count.available === 2) {
+        cell.classList.add("heat-2");
+      } else if (count.available === 1) {
+        cell.classList.add("heat-1");
+      } else if (count.maybe > 0) {
+        cell.classList.add("heat-maybe");
+      } else if (count.unavailable > 0) {
+        cell.classList.add("heat-unavailable");
+      }
+    });
+  }
+
+  // Handle real-time update
+  socket.on("availability_updated", (data) => {
+    if (data.event_id !== eventId) return;
+
+    const key = `${data.date}|${data.time}`;
+    const cell = document.querySelector(`td[data-date="${data.date}"][data-time="${data.time}"]`);
+    if (cell) {
+      cell.classList.remove("available", "maybe", "unavailable");
+      cell.classList.add(data.status);
+    }
+
+    Object.assign(heatmapMap, data.heatmap);
+    applyHeatmap();
+
+    if (data.best_time) {
+      const box = document.querySelector(".best-time-box");
+      box.innerHTML = `
+        <h3>📌 Best Time to Meet</h3>
+        <p><strong>Date:</strong> ${formatDate(data.best_time.date)}</p>
+        <p><strong>Time:</strong> ${data.best_time.start} – ${data.best_time.end}</p>
+        <p><strong>Available Users:</strong> ${data.best_time.available}</p>
+      `;
+    }
+  });
+
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' });
+  }
+</script>
+{% endblock %}

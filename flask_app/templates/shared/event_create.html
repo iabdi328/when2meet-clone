@@ -1,0 +1,80 @@
+{% extends "layout.html" %} {% block title %}Create Event | When2Meet Clone{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='main/css/event.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='main/css/calendar.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="event-container">
+  <h2>📝 Create a New Event</h2>
+
+  <form method="POST" id="eventForm">
+    <!-- Event Title -->
+    <div class="form-group">
+      <label for="title">Event Title</label>
+      <input
+        type="text"
+        id="title"
+        name="title"
+        required
+        placeholder="e.g., Project Kickoff"
+      />
+    </div>
+
+    <!-- Specific Date Picker Grid -->
+    <div class="form-group">
+      <label>Select Specific Dates</label>
+      <div id="calendarGrid" class="calendar-grid"></div>
+      <input type="hidden" name="specific_dates" id="specific_dates" required />
+      <small>Select multiple dates by clicking on them.</small>
+    </div>
+
+    <!-- Time Range -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="start_time">No earlier than:</label>
+        <input
+          type="time"
+          id="start_time"
+          name="start_time"
+          value="09:00"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="end_time">No later than:</label>
+        <input
+          type="time"
+          id="end_time"
+          name="end_time"
+          value="17:00"
+          required
+        />
+      </div>
+    </div>
+
+    <!-- Invitees -->
+    <div class="form-group">
+      <label for="invitees"
+        >Invitee Emails <small>(comma-separated)</small></label
+      >
+      <textarea
+        id="invitees"
+        name="invitees"
+        rows="3"
+        placeholder="e.g., alice@example.com, bob@example.com"
+        required
+      ></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit">➕ Create Event</button>
+  </form>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='main/js/calendar.js') }}"></script>
+{% endblock %}
